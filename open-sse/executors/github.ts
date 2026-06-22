@@ -24,9 +24,23 @@ export class GithubExecutor extends BaseExecutor {
     );
   }
 
+  // GitHub Copilot's /responses endpoint only serves OpenAI (gpt/codex) models.
+  // Gemini and Claude variants on Copilot reject with HTTP 400
+  //   "model <id> does not support Responses API." (unsupported_api_for_model)
+  // Pin a defensive invariant: even if a future registry edit (or an upstream
+  // model-discovery refresh) tagged a Claude/Gemini entry as openai-responses,
+  // the executor must still route it to /chat/completions. Port of 9router#1536
+  // (follow-up to #663); also reinforces the existing comments on the gh
+  // registry entries (claude-opus-4-5-20251101, claude-opus-4.7, gemini-*).
+  supportsResponsesEndpoint(model: string | null | undefined): boolean {
+    const m = (model || "").toLowerCase();
+    if (!m) return true;
+    return !(m.includes("gemini") || m.includes("claude"));
+  }
+
   buildUrl(model: string, _stream: boolean, _urlIndex = 0) {
     const targetFormat = getModelTargetFormat("gh", model);
-    if (targetFormat === "openai-responses") {
+    if (targetFormat === "openai-responses" && this.supportsResponsesEndpoint(model)) {
       return (
         this.config.responsesBaseUrl ||
         this.config.baseUrl?.replace(/\/chat\/completions\/?$/, "/responses") ||
