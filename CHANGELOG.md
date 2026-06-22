@@ -8,6 +8,7 @@
 
 ### ✨ New Features
 
+- **feat(combo): Fusion strategy — parallel panel + judge synthesis (16th strategy)** — a fusion combo fans the prompt to every panel model in parallel, then a configurable judge model synthesizes one final answer. Quorum-grace collection caps the straggler penalty, anonymized sources prevent judge brand-bias, degrades to a direct answer on single survivor and 503 on total failure. (thanks @thedon2200)
 - **feat(combo): nested combo-ref execution (`nestedComboMode: execute`)** — selection strategies can now treat a combo-reference step as a black box, executing the referenced combo as a single unit instead of flattening its targets. ([#4537](https://github.com/diegosouzapw/OmniRoute/pull/4537) — thanks @adivekar-utexas)
 - **feat(combo): sticky weighted selection limit with exhaustion-aware renormalization** — weighted strategies gain a configurable sticky-selection limit; once a target is exhausted, remaining weights renormalize so traffic is redistributed correctly. ([#4489](https://github.com/diegosouzapw/OmniRoute/pull/4489) — thanks @adivekar-utexas)
 - **feat(combos): provider-wildcard expansion in combo steps** — a combo step may now reference a whole provider via wildcard and have it expand to that provider's models at resolution time. ([#4545](https://github.com/diegosouzapw/OmniRoute/pull/4545) — thanks @Rahulsharma0810)
