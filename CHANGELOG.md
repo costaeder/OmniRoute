@@ -63,6 +63,7 @@
 
 ### 🔒 Security
 
+- **fix(security): resolve image host up-front and reject private-resolving names to prevent DNS-rebinding SSRF (GHSA-cmhj-wh2f-9cgx)** — `fetchRemoteImage` (used by vision guardrails and the image-generation handler) now resolves the URL host with `dns.promises.lookup({ all: true })` before issuing the request and rejects if any resolved record is loopback, private, link-local, or cloud-metadata. Defeats the multi-A trick and narrows the TOCTOU window where a public-looking name resolves to an internal IP. IP-literal hosts skip resolution (already covered by the URL guard). ([decolua/9router](https://github.com/decolua/9router) port, GHSA-cmhj-wh2f-9cgx — thanks @decolua)
 - **fix(sse): crypto-secure RNG for combo/deck load-balancing selection** — replaces `Math.random()` with a crypto-secure source in the combo/deck weighted-selection path. ([#4455](https://github.com/diegosouzapw/OmniRoute/pull/4455) — thanks @diegosouzapw)
 
 ### 📝 Maintenance
