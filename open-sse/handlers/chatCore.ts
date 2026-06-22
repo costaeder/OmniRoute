@@ -687,6 +687,7 @@ export async function handleChatCore({
         statusCode,
         errorCode,
         latencyMs: Date.now() - startTime,
+        endpoint: endpointPath,
       })
     ).catch(() => {});
   };
@@ -4185,6 +4186,7 @@ export async function handleChatCore({
         apiKeyName: apiKeyInfo?.name || undefined,
         serviceTier: effectiveServiceTier,
         comboStrategy: isCombo ? comboStrategy || undefined : undefined,
+        endpoint: endpointPath || undefined,
       }).catch((err) => {
         console.error("Failed to save usage stats:", err.message);
       });
@@ -4673,6 +4675,7 @@ export async function handleChatCore({
         apiKeyName: apiKeyInfo?.name || undefined,
         serviceTier: effectiveServiceTier,
         comboStrategy: isCombo ? comboStrategy || undefined : undefined,
+        endpoint: endpointPath || undefined,
       }).catch((err) => {
         console.error("Failed to save usage stats:", err.message);
       });

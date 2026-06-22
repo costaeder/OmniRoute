@@ -8,6 +8,10 @@
 
 _In development — bullets added per PR; finalized at release._
 
+### ✨ New Features
+
+- **feat(db): track API endpoint dimension on usage_history** — `usage_history` gains an `endpoint` column (migration 103) populated from the inbound request path at every `saveRequestUsage` call site, plus a new `getEndpointUsageRows(...)` aggregation that groups requests/tokens/latency by endpoint × provider × model and folds legacy NULL rows into an `unknown` bucket. Unlocks per-endpoint analytics (`/v1/chat/completions` vs `/v1/messages` vs `/v1/responses`). (thanks @toanalien)
+
 ### 📝 Maintenance
 
 - **chore(quality): release-green pre-flight validator + nightly signal** — new `npm run check:release-green` (`scripts/quality/validate-release-green.mjs`) reproduces the release-equivalent validation (full unit + vitest + ratchets + typecheck + lint, optional `--with-build` package-artifact) against the current working tree and classifies each red as **HARD** (real defect) vs **DRIFT** (ratchet, rebaselined at release) — purely diagnostic, never blocking contributors. A new `nightly-release-green` workflow runs it on the active release branch and opens/updates a tracking issue on hard failures. Closes the gap where the full gate (`ci.yml`) only ran on the release PR, so reds accrued silently on `release/**` and surfaced in layers at release time. (thanks @diegosouzapw)
