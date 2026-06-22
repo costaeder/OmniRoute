@@ -12,6 +12,10 @@
 
 _In development — bullets added per PR; finalized at release._
 
+### ✨ New Features
+
+- **feat(opencode-go): advertise glm-5.2 and kimi-k2.7-code (align with official Go endpoints)** — added the two model IDs the official Go API now advertises. The plain `kimi-k2.7` alias is rejected by the live `/chat/completions` endpoint even though the docs config example uses it, so chat traffic must target `kimi-k2.7-code`. OmniRoute already routes the Anthropic-format models (`minimax-m3`, `qwen3.7-max`, …) through `/messages` declaratively via `targetFormat: "claude"`, so no executor changes are needed. (port from decolua/9router 8efacc11 — thanks @nguyenha935)
+
 ### 📝 Maintenance
 
 - **chore(quality): release-green pre-flight validator + nightly signal** — new `npm run check:release-green` (`scripts/quality/validate-release-green.mjs`) reproduces the release-equivalent validation (full unit + vitest + ratchets + typecheck + lint, optional `--with-build` package-artifact) against the current working tree and classifies each red as **HARD** (real defect) vs **DRIFT** (ratchet, rebaselined at release) — purely diagnostic, never blocking contributors. A new `nightly-release-green` workflow runs it on the active release branch and opens/updates a tracking issue on hard failures. Closes the gap where the full gate (`ci.yml`) only ran on the release PR, so reds accrued silently on `release/**` and surfaced in layers at release time. (thanks @diegosouzapw)
