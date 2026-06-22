@@ -63,6 +63,7 @@
 
 ### 🔒 Security
 
+- **fix(security): validate kiro region to prevent SSRF (GHSA-6mwv-4mrm-5p3m)** — reject non-AWS region values before interpolating them into upstream URLs (`https://oidc.${region}.amazonaws.com/...`), closing an outbound-fetch redirection vector through the kiro OAuth import surface. (thanks @decolua)
 - **fix(sse): crypto-secure RNG for combo/deck load-balancing selection** — replaces `Math.random()` with a crypto-secure source in the combo/deck weighted-selection path. ([#4455](https://github.com/diegosouzapw/OmniRoute/pull/4455) — thanks @diegosouzapw)
 
 ### 📝 Maintenance
