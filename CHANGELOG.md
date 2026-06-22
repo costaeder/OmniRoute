@@ -12,6 +12,10 @@
 
 _In development — bullets added per PR; finalized at release._
 
+### Fixed
+
+- **fix(cli): bump pinned `better-sqlite3` runtime version to `12.10.1` for Node 26 compatibility** — `bin/cli/runtime/nativeDeps.mjs` (was `12.9.0`) and `bin/cli/runtime/sqliteRuntime.mjs` (was `^12.6.2`) pinned older versions whose `engines` field stopped at Node 25, so the bundled native binding failed to load on Node 26.x with `Could not locate the bindings file`, triggering a server crash loop on startup. `better-sqlite3@12.10.1` ships prebuilt binaries for Node 26 (ABI 147). Ported from upstream [decolua/9router#1827](https://github.com/decolua/9router/pull/1827) (thanks @0xSkybreaker).
+
 ### 📝 Maintenance
 
 - **chore(quality): release-green pre-flight validator + nightly signal** — new `npm run check:release-green` (`scripts/quality/validate-release-green.mjs`) reproduces the release-equivalent validation (full unit + vitest + ratchets + typecheck + lint, optional `--with-build` package-artifact) against the current working tree and classifies each red as **HARD** (real defect) vs **DRIFT** (ratchet, rebaselined at release) — purely diagnostic, never blocking contributors. A new `nightly-release-green` workflow runs it on the active release branch and opens/updates a tracking issue on hard failures. Closes the gap where the full gate (`ci.yml`) only ran on the release PR, so reds accrued silently on `release/**` and surfaced in layers at release time. (thanks @diegosouzapw)
