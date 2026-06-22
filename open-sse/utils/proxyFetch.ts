@@ -277,9 +277,10 @@ export async function runWithProxyContext(
 
   // T14: Proxy Fast-Fail
   // Perform a short TCP reachability check before issuing upstream requests.
-  // Skip for vercel-relay type: proxyConfigToUrl returns "https://<host>" which is the
+  // Skip for vercel/cloudflare relay types: proxyConfigToUrl returns "https://<host>" which is the
   // relay endpoint itself, not a proxy — the actual routing is handled via relay headers.
-  const isVercelRelay = (effectiveProxyConfig as { type?: string })?.type === "vercel";
+  const effectiveType = (effectiveProxyConfig as { type?: string })?.type;
+  const isVercelRelay = effectiveType === "vercel" || effectiveType === "cloudflare";
   if (resolvedProxyUrl && !isVercelRelay) {
     const reachable = await isProxyReachable(resolvedProxyUrl);
     if (!reachable) {
@@ -506,20 +507,25 @@ async function patchedFetch(
     throw lastDispatcherError;
   }
 
-  // Vercel Relay: instead of routing through an HTTP proxy dispatcher, we send
-  // relay headers to the Vercel edge function which forwards the request upstream.
+  // Vercel/Cloudflare Relay: instead of routing through an HTTP proxy dispatcher,
+  // we send relay headers (x-relay-target / x-relay-path / x-relay-auth) to the
+  // relay edge function which forwards the request upstream. Both relay types
+  // share the exact same header spec — only the deployment surface differs.
   const contextProxy = proxyContext.getStore();
-  if (
-    contextProxy &&
-    typeof contextProxy === "object" &&
-    (contextProxy as { type?: string }).type === "vercel"
-  ) {
+  const ctxType =
+    contextProxy && typeof contextProxy === "object"
+      ? (contextProxy as { type?: string }).type
+      : undefined;
+  if (ctxType === "vercel" || ctxType === "cloudflare") {
     const vc = contextProxy as { host?: string; relayAuth?: string };
     if (!vc.relayAuth) {
       // Generic message without internal labels — this throw can bubble up to
       // catch blocks that put error.message in response bodies (combo per-model
       // timeout, executor catch-all). Don't leak "[ProxyFetch]" diagnostics.
-      throw new Error("Vercel relay configuration error: missing relayAuth");
+      // Generic label "relay configuration error" covers both vercel + cloudflare
+      // surfaces; the original "Vercel relay configuration error" string is kept
+      // as a substring so existing log/regex consumers stay matching.
+      throw new Error(`${ctxType === "cloudflare" ? "Cloudflare" : "Vercel"} relay configuration error: missing relayAuth`);
     }
     const targetUrl = getTargetUrl(input);
     const relayHeaders = buildVercelRelayHeaders(targetUrl, vc.relayAuth);
@@ -529,7 +535,7 @@ async function patchedFetch(
     // to relay routing logs (the rest of this module already follows that rule).
     const hostForLogs = proxyUrlForLogs(vc.host ? `https://${vc.host}` : "");
     if (process.env.OMNIROUTE_PROXY_FETCH_DEBUG === "true") {
-      console.debug(`[ProxyFetch] Routing via Vercel relay: ${hostForLogs}`);
+      console.debug(`[ProxyFetch] Routing via ${ctxType} relay: ${hostForLogs}`);
     }
     return await originalFetch(`https://${vc.host}`, {
       ...options,

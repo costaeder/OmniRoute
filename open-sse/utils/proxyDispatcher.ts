@@ -305,9 +305,12 @@ export function proxyConfigToUrl(
   if (!config.host) return null;
   const type = String(config.type || "http").toLowerCase();
 
-  // Vercel Relay entries carry the relay URL in `host` — no dispatcher needed;
-  // callers should use buildVercelRelayHeaders() and fetch directly.
-  if (type === "vercel") {
+  // Vercel/Cloudflare Relay entries carry the relay URL in `host` — no
+  // dispatcher needed; callers should use buildVercelRelayHeaders() and fetch
+  // directly against the relay origin. Both relay types share the exact same
+  // x-relay-target / x-relay-path / x-relay-auth header spec (only the
+  // deployment target — Vercel Edge vs Cloudflare Workers — differs).
+  if (type === "vercel" || type === "cloudflare") {
     return config.host ? `https://${config.host}` : null;
   }
 
